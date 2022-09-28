@@ -1,0 +1,2 @@
+class EmptyNoteException(Exception):
+    pass

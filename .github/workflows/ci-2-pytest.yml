@@ -1,0 +1,33 @@
+name: "CI - Pytest"
+concurrency:
+  group: ci-pytest-${{ github.ref }}
+  cancel-in-progress: true
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - ready_for_review
+env:
+  PYTHON_VERSION: 3.9.10
+jobs:
+  test:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Load cached Poetry installation
+        uses: actions/cache@v2
+        with:
+          path: ~/.local # the path depends on the OS
+          key: poetry-0 # increment to reset cache
+      - uses: snok/install-poetry@v1
+      - name: Install
+        run: poetry install --no-interaction --all-extras
+      - name: Test with pytest
+        run: |
+          poetry run pytest cli -vv

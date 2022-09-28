@@ -1,0 +1,27 @@
+#!/bin/bash
+DOCS_ROOT="docs"
+README_PATH="README.md"
+USAGE_PATH="$DOCS_ROOT/4-USAGE.md"
+
+if command -v sha1sum >/dev/null; then
+  hasher=sha1sum
+else
+  hasher="md5 -q"
+fi
+
+pip install .
+pipx install typer-cli==0.0.12 --force --system-site-packages
+echo "using $hasher for diff"
+before_hash=$($hasher README.md)
+typer cli.main utils docs --output "$USAGE_PATH" --name "dev"
+cat ${DOCS_ROOT}/*.md >$README_PATH
+rm "$USAGE_PATH"
+after_hash=$($hasher README.md)
+
+if [[ "$before_hash" == "$after_hash" ]]; then
+  echo "README.md was not changed: $after_hash"
+  exit 0
+else
+  echo "README.md updated: $before_hash -> $after_hash"
+  exit 1
+fi
